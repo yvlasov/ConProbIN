@@ -48,6 +48,57 @@ Now ```Accidents7904.csv``` data available on HDFS
 
 Launch task in marathon with ```dcos marathon app add dcos-jupiter.json```
 
+```json
+{
+    "id": "/jupiter/all-spark-notebook",
+    "cpus": 0.5,
+    "mem": 1024,
+    "requirePorts": true,
+    "instances": 1,
+    "ports": [ 8888 ],
+    "cmd": "/usr/local/bin/start-notebook.sh",
+    "container": {
+        "type": "DOCKER",
+        "docker": {
+            "image": "pytnru/all-spark-notebook",
+            "forcePullImage": false,
+            "network": "HOST",
+            "privileged": false,
+            "parameters": [
+                { "key": "volume", "value": "/opt/mesosphere/:/opt/mesosphere/" }
+            ]
+        }
+    },
+    "env":{
+"TINI_SUBREAPER": "true",
+"PYTHONHASHSEED": "0",
+"PYTHONUNBUFFERED":"true",
+"PATH": "/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/mesosphere/bin/",
+"JAVA_HOME": "/opt/mesosphere/active/java/",
+"MESOS_NATIVE_JAVA_LIBRARY": "/opt/mesosphere/lib/libmesos.so",
+"MESOS_NATIVE_LIBRARY": "/opt/mesosphere/lib/libmesos.so",
+"HDFS_MESOS_CONFIG_PATH": "/opt/mesosphere/etc/hadoop/hdfs-site.xml",
+"PYSPARK_PYTHON": "python3",
+"PYSPARK_SUBMIT_ARGS": " --master mesos://master.mesos:5050 --conf spark.executor.uri=http://tc.pytn.ru/spark-1.6.1-bin-hadoop2.6.tgz"
+    },
+    "constraints": [["hostname", "LIKE", "10.0.3.253"]],
+    "healthChecks": [
+        {
+      "protocol": "HTTP",
+      "path": "/",
+      "portIndex": 0,
+      "timeoutSeconds": 10,
+      "gracePeriodSeconds": 10,
+      "intervalSeconds": 2,
+      "maxConsecutiveFailures": 10
+        }
+    ],
+    "labels":{
+    "HAPROXY_GROUP":"external"
+    }
+}
+```
+
 ## Publish Jupiter port to outside
 
 Launch marathon-ld with ```dcos package install marathon-lb```
