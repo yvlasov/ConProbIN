@@ -12,7 +12,7 @@ for v in g.vertices():
      vlist2.append(v)
 
 assert(vlist == vlist2)
-#help(gt.Graph)
+help(gt.Graph)
 
 #print vlist
 
