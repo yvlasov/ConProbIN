@@ -5,30 +5,35 @@ import csv
 import itertools
 import graph_tool.all as gt
 
+from graph_tool.all import *
+
 gIMUData = gt.Graph()
-
-gIMUData.add_vertex(5)
-
+vPropDOF1=gIMUData.vertex_properties["DOF1"] = gIMUData.new_vertex_property("int")
+ePropDOF1=gIMUData.edge_properties["DOF1"] = gIMUData.new_edge_property("int")
 myFileNameLoad="my.csv"
+
 with open(myFileNameLoad, 'rb') as pageList:
         stateReader = csv.reader(pageList, delimiter=',', quotechar='"')
-        #this is for the rows in your downloaded file
-        start = 1
+        start = 0
         end = 5
+	curVrtx=-1
         for row in itertools.islice(stateReader, start, end):
+	    prevVrtx=curVrtx
 	    print row[0]
-	    gIMUData.add_vertex(int(row[0]))
+	    curVrtx=gIMUData.add_vertex(1)
+	    vPropDOF1[curVrtx] = int(row[0])
+	    if prevVrtx !=-1:
+		curEdge=gIMUData.add_edge(prevVrtx,curVrtx)
+		ePropDOF1[curEdge] = int(row[0]) - vPropDOF1[prevVrtx]
 
-vlist = list(gIMUData.add_vertex(5))
-vlist2 = []
-for v in gIMUData.vertices():
-     vlist2.append(v)
-
-print vlist
+print gIMUData.list_properties()
 print gIMUData
+#myVertx=gIMUData.vertex(0,use_index=False)
 
-assert(vlist == vlist2)
+for eachVrtx in gIMUData.vertices():
+    print vPropDOF1[eachVrtx]
+    for eachEdg in eachVrtx.all_edges():
+	print eachEdg
+gIMUData.add_edge(gIMUData.vertex(0),gIMUData.vertex(4))
 
-
-#help(gt.Graph)
-
+graph_draw(gIMUData, edge_text=ePropDOF1 ,vertex_text=vPropDOF1, edge_font_size=24, vertex_font_size=18, output_size=(600, 600), output="two-nodes.png")
